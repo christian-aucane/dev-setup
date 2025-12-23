@@ -6,4 +6,4 @@ help:
 	@echo "make link	-> create symlinks"
 
 link:
-	scripts/dotfiles.py link
+	$(PYTHON) scripts/dotfiles.py link
