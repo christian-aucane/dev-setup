@@ -1,0 +1,32 @@
+# =========================================
+# Neovide minimal config - only overrides
+# =========================================
+
+[font]
+# Primary font used by Neovide
+# Values: string or array of strings
+# Default: ["Fira Code Nerd Font"]
+normal = ["FiraCode Nerd Font"]
+
+# Font size in points
+# Values: float
+# Default: 14.0
+size = 16
+
+# Optional: secondary fonts for bold/italic
+# Only override if you want different style for bold/italic
+# Default: fallback to normal font
+bold = ["FiraCode Nerd Font"]
+italic = ["FiraCode Nerd Font"]
+bold_italic = ["FiraCode Nerd Font"]
+
+[box-drawing]
+# Rendering mode for box-drawing characters
+# Values: "font-glyph", "native", "selected-native"
+# Default: "native"
+mode = "native"
+
+[box-drawing.sizes]
+# Thickness of thin/thick lines in pixels
+# Default: [2, 4]
+default = [2, 4]
