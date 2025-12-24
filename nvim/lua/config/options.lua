@@ -133,4 +133,12 @@ opt.wrap = false -- Disable line wrap
 -- Fix markdown indentation settings
 -- vim.g.markdown_recommended_style = 0
 
+-- Active le wrapping (retour à la ligne automatique)
+vim.wo.wrap = true
+
+-- Facultatif : indentation du wrapping
+vim.wo.breakindent = true -- aligne visuellement les lignes “wrapées”
+
+-- Facultatif : pour éviter de couper au milieu d’un mot
+vim.opt.linebreak = true
 -- [END] OVERRIDE --
