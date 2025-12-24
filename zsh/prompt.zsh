@@ -4,8 +4,6 @@
 # Prompt Zsh minimal, lisible et efficace
 # =========================================
 
-echo "DEBUG: prompt.zsh loaded"
-
 # Permet l'expansion de variables dans le prompt
 setopt PROMPT_SUBST
 

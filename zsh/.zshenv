@@ -3,8 +3,7 @@
 # Variables d’environnement UNIQUEMENT
 # =========================================
 
-echo "DEBUG : .zshenv loaded"
-# Chemin du repo dotfiles
+# Chemin du repo
 ZSHENV_DIR="${0:A:h}"
 export DOTFILES="${ZSHENV_DIR:h}"
 

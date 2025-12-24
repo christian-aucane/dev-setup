@@ -4,8 +4,6 @@
 # Gestionnaire + plugins
 # =========================================
 
-echo "DEBUG: plugins.zsh loaded"
-
 # Installer zinit si absent
 if [[ ! -f "$HOME/.zinit/bin/zinit.zsh" ]]; then
     mkdir -p "$HOME/.zinit"

@@ -3,8 +3,6 @@
 # Configuration Zsh de base (starter)
 # =========================================
 
-echo "DEBUG: options.zsh loaded"
-
 # -------------------
 # Historique (CRITIQUE)
 # -------------------

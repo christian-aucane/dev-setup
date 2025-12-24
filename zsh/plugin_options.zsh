@@ -3,8 +3,6 @@
 # Options AVANT chargement des plugins
 # =========================================
 
-echo "DEBUG: plugin_options.zsh loaded"
-
 # zsh-autosuggestions
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
 ZSH_AUTOSUGGEST_STRATEGY=(history)

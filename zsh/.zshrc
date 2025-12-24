@@ -3,7 +3,6 @@
 # Point d’entrée interactif
 # =========================================
 
-echo "DEBUG: .zshrc loaded"
 
 ZSHRC_REALPATH="${${(%):-%N}:A}"
 REPO_ZSH_DIR="$(dirname "$ZSHRC_REALPATH")"
