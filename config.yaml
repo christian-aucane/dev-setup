@@ -5,15 +5,13 @@ link:
     dest: ~/.zshrc
   - src: neovide
     dest: ~/.config/neovide
-install:
-  nvim:
-    link:
-      - src: nvim
-        dest: ~/.config/nvim
-    pip_packages:
-      - norminette
-      - c-formatter-42
-  fonts:
-    src_dir: fonts
-    dest_dir: ~/.local/share/fonts
-
+nvim:
+  link:
+    - src: nvim
+      dest: ~/.config/nvim
+  pip_packages:
+    - norminette
+    - c-formatter-42
+fonts:
+  src_dir: fonts
+  dest_dir: ~/.local/share/fonts
