@@ -1,6 +1,0 @@
-links:
-  - src: zsh/.zshenv
-    dest: ~/.zshenv
-  - src: zsh/.zshrc
-    dest: ~/.zshrc
-
