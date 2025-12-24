@@ -101,16 +101,169 @@ def install(config):
     log("[INSTALL] full setup")
     if link(config["link"]) == EXIT_ERROR:
         return EXIT_ERROR
-    install_fonts(config["install"]["fonts"])
-    install_nvim(config["install"]["nvim"])
+    install_fonts(config["fonts"])
+    install_nvim(config["nvim"])
     log("[OK] full setup successfully installed !")
     return EXIT_SUCCESS
 
 
-def update(): ...
+def git_pull():
+    log("[UPDATE] git pull")
+    subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "pull", "--rebase"],
+        check=True,
+    )
 
 
-def check(): ...
+def update_nvim():
+    log("[UPDATE] nvim")
+    subprocess.run(
+        [
+            "nvim",
+            "--headless",
+            "+Lazy! sync",
+            "+MasonUpdate",
+            "+TSUpdate",
+            "+qa",
+        ],
+        check=True,
+    )
+
+
+def update(config):
+    log("[UPDATE] full setup")
+
+    git_pull()
+
+    if link(config["link"]) == EXIT_ERROR:
+        return EXIT_ERROR
+
+    update_nvim()
+
+    log("[OK] update finished")
+    return EXIT_SUCCESS
+
+
+def check_repo():
+    log("[CHECK] repo")
+
+    if not (REPO_ROOT / ".git").exists():
+        log("[ERROR] not a git repository")
+        return EXIT_ERROR
+
+    result = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "status", "--porcelain"],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.stdout.strip():
+        log("[WARN] repo has uncommitted changes")
+    else:
+        log("[OK] repo clean")
+
+    return EXIT_SUCCESS
+
+
+def check_links(links_config):
+    log("[CHECK] links")
+    status = EXIT_SUCCESS
+
+    for entry in links_config:
+        src = (REPO_ROOT / entry["src"]).resolve()
+        dest = Path(entry["dest"]).expanduser()
+
+        if not src.exists():
+            log(f"[ERROR] source missing: {src}")
+            status = EXIT_ERROR
+            continue
+
+        if not dest.exists():
+            log(f"[MISSING] {dest}")
+            status = EXIT_ERROR
+            continue
+
+        if not dest.is_symlink():
+            log(f"[WRONG] {dest} is not a symlink")
+            status = EXIT_ERROR
+            continue
+
+        if dest.resolve() != src:
+            log(f"[WRONG] {dest} -> {dest.resolve()}")
+            status = EXIT_ERROR
+            continue
+
+        log(f"[OK] {dest}")
+
+    return status
+
+
+def check_pip_packages(packages):
+    log("[CHECK] pip packages")
+    status = EXIT_SUCCESS
+
+    for pkg in packages:
+        result = subprocess.run(
+            ["python3", "-m", "pip", "show", pkg],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        if result.returncode != 0:
+            log(f"[MISSING] {pkg}")
+            status = EXIT_ERROR
+        else:
+            log(f"[OK] {pkg}")
+
+    return status
+
+
+def check_nvim(nvim_config):
+    log("[CHECK] nvim")
+
+    if not shutil.which("nvim"):
+        log("[ERROR] nvim not found")
+        return EXIT_ERROR
+
+    log("[OK] nvim found")
+
+    if check_pip_packages(nvim_config["pip_packages"]) == EXIT_ERROR:
+        return EXIT_ERROR
+    return EXIT_SUCCESS
+
+
+def check_fonts(fonts_config):
+    log("[CHECK] fonts")
+
+    dest = Path(fonts_config["dest_dir"]).expanduser()
+
+    if not dest.exists():
+        log(f"[ERROR] fonts dir missing: {dest}")
+        return EXIT_ERROR
+
+    fonts = list(dest.glob("*.ttf"))
+    if not fonts:
+        log("[WARN] no fonts found")
+        return EXIT_ERROR
+
+    log(f"[OK] {len(fonts)} fonts installed")
+    return EXIT_SUCCESS
+
+
+def check(config):
+    status = EXIT_SUCCESS
+
+    status |= check_repo()
+    status |= check_links(config["link"])
+    status |= check_nvim(config["nvim"])
+    status |= check_fonts(config["fonts"])
+
+    if status == EXIT_SUCCESS:
+        log("[OK] all checks passed")
+    else:
+        log("[WARN] some checks failed")
+
+    return status
 
 
 def uninstall(): ...
@@ -120,12 +273,14 @@ def dispatch(args, config):
     commands_mapping = {
         "link": lambda: link(config["link"]),
         "install": lambda: install(config),
+        "update": lambda: update(config),
+        "check": lambda: check(config),
     }
-    try:
-        return commands_mapping[args.command]()
-    except KeyError:
+    command = args.command
+    if command not in commands_mapping:
         log(f"[ERROR] '{args.command}' is not valid !")
         return EXIT_ERROR
+    return commands_mapping[args.command]()
 
 
 def parse_args():

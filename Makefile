@@ -1,4 +1,4 @@
-.PHONY: help link install
+.PHONY: help link install update check
 
 PYTHON := python3
 COMMANDS_SCRIPT := make_commands.py
@@ -12,3 +12,9 @@ link:
 
 install:
 	$(PYTHON) $(COMMANDS_SCRIPT) install
+
+update:
+	$(PYTHON) $(COMMANDS_SCRIPT) update
+
+check:
+	$(PYTHON) $(COMMANDS_SCRIPT) check
