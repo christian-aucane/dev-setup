@@ -84,7 +84,14 @@ def install_nvim(nvim_config):
     link(nvim_config["link"])
     log("[INSTALL] Python dependencies")
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "--user", *nvim_config["pip_packages"]],
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--user",
+            *nvim_config["pip_packages"],
+        ],
         check=True,
     )
     log("[OK] nvim successfully installed !")
@@ -100,16 +107,13 @@ def install(config):
     return EXIT_SUCCESS
 
 
-def update():
-    ...
+def update(): ...
 
 
-def check():
-    ...
+def check(): ...
 
 
-def uninstall():
-    ...
+def uninstall(): ...
 
 
 def dispatch(args, config):
@@ -124,13 +128,12 @@ def dispatch(args, config):
         return EXIT_ERROR
 
 
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Manage setup commands")
     parser.add_argument(
         "command",
         choices=["link", "install", "update", "check", "uninstall"],
-        help="The command to execute"
+        help="The command to execute",
     )
     args = parser.parse_args(sys.argv[1:])
     return args
