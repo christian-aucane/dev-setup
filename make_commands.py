@@ -138,7 +138,7 @@ def update(config):
 
     update_nvim()
 
-    log("[OK] update finished")
+    log("\n[OK] update finished")
     return EXIT_SUCCESS
 
 
