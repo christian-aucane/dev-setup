@@ -107,36 +107,76 @@ def install(config):
 
 def git_pull():
     log("[UPDATE] git pull")
-    subprocess.run(
-        ["git", "-C", str(REPO_ROOT), "pull", "--rebase"],
-        check=True,
-    )
+    try:
+        subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "pull", "--rebase"],
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 128:
+            log("[WARN] Git pull failed: uncommitted changes present")
+            if ask_confirmation("Do you want to stash changes and retry?"):
+                log("[INFO] Stashing changes...")
+                subprocess.run(["git", "-C", str(REPO_ROOT), "stash"], check=True)
+                log("[INFO] Retrying git pull...")
+                try:
+                    subprocess.run(
+                        ["git", "-C", str(REPO_ROOT), "pull", "--rebase"],
+                        check=True,
+                    )
+                except subprocess.CalledProcessError as e2:
+                    log(f"[ERROR] Git pull still failed with exit code {e2.returncode}")
+                    return EXIT_ERROR
+                log("[INFO] Applying stashed changes...")
+                subprocess.run(
+                    ["git", "-C", str(REPO_ROOT), "stash", "pop"], check=True
+                )
+            else:
+                log("[INFO] Skipping git pull due to uncommitted changes")
+        else:
+            log(f"[ERROR] Git pull failed with exit code {e.returncode}")
+            return EXIT_ERROR
+    return EXIT_SUCCESS
 
 
 def update_nvim():
     log("[UPDATE] nvim")
-    subprocess.run(
-        [
-            "nvim",
-            "--headless",
-            "+Lazy! sync",
-            "+MasonUpdate",
-            "+TSUpdate",
-            "+qa",
-        ],
-        check=True,
-    )
+    # On headless, MasonUpdate peut échouer si Mason n'est pas encore installé
+    # On lance les commandes Lua directement pour Mason et TreeSitter
+    try:
+        subprocess.run(
+            [
+                "nvim",
+                "--headless",
+                "-c",
+                'lua pcall(require("lazy").sync)',  # Lazy sync safely
+                "-c",
+                # Mason update safely
+                'lua pcall(require("mason.api.command").MasonUpdate)',
+                "-c",
+                "TSUpdate",  # Treesitter update
+                "-c",
+                "qa",
+            ],
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        log(f"[WARN] nvim update failed with exit code {e.returncode}")
+        return EXIT_ERROR
+    return EXIT_SUCCESS
 
 
 def update(config):
     log("[UPDATE] full setup")
 
-    git_pull()
+    if git_pull() == EXIT_ERROR:
+        return EXIT_ERROR
 
     if link(config["link"]) == EXIT_ERROR:
         return EXIT_ERROR
 
-    update_nvim()
+    if update_nvim() == EXIT_ERROR:
+        return EXIT_ERROR
 
     log("\n[OK] update finished")
     return EXIT_SUCCESS
