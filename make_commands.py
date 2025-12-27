@@ -250,6 +250,23 @@ def check_fonts(fonts_config):
     return EXIT_SUCCESS
 
 
+def check_zsh():
+    log("[CHECK] zsh")
+
+    if not shutil.which("zsh"):
+        log("[ERROR] zsh not found")
+        return EXIT_ERROR
+
+    env_file = REPO_ROOT / "zsh" / "env.zsh"
+
+    if env_file.exists():
+        log("[OK] env.zsh present")
+    else:
+        log("[INFO] env.zsh not found (optional)")
+
+    return EXIT_SUCCESS
+
+
 def check(config):
     status = EXIT_SUCCESS
 
@@ -257,6 +274,7 @@ def check(config):
     status |= check_links(config["link"])
     status |= check_nvim(config["nvim"])
     status |= check_fonts(config["fonts"])
+    status |= check_zsh()
 
     if status == EXIT_SUCCESS:
         log("[OK] all checks passed")
