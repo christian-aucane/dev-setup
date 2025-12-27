@@ -79,9 +79,7 @@ def install_fonts(fonts_config):
     log("[OK] fonts successfully installed !")
 
 
-def install_nvim(nvim_config):
-    log("[INSTALL] nvim")
-    link(nvim_config["link"])
+def install_pip_packages(packages):
     log("[INSTALL] Python dependencies")
     subprocess.run(
         [
@@ -90,11 +88,11 @@ def install_nvim(nvim_config):
             "pip",
             "install",
             "--user",
-            *nvim_config["pip_packages"],
+            *packages,
         ],
         check=True,
     )
-    log("[OK] nvim successfully installed !")
+    log("[OK] Python dependencies successfully installed !")
 
 
 def install(config):
@@ -102,7 +100,7 @@ def install(config):
     if link(config["link"]) == EXIT_ERROR:
         return EXIT_ERROR
     install_fonts(config["fonts"])
-    install_nvim(config["nvim"])
+    install_pip_packages(config["pip_packages"])
     log("[OK] full setup successfully installed !")
     return EXIT_SUCCESS
 
@@ -218,7 +216,7 @@ def check_pip_packages(packages):
     return status
 
 
-def check_nvim(nvim_config):
+def check_nvim():
     log("[CHECK] nvim")
 
     if not shutil.which("nvim"):
@@ -227,8 +225,6 @@ def check_nvim(nvim_config):
 
     log("[OK] nvim found")
 
-    if check_pip_packages(nvim_config["pip_packages"]) == EXIT_ERROR:
-        return EXIT_ERROR
     return EXIT_SUCCESS
 
 
@@ -256,6 +252,7 @@ def check_zsh():
     if not shutil.which("zsh"):
         log("[ERROR] zsh not found")
         return EXIT_ERROR
+    log("[OK] zsh found")
 
     env_file = REPO_ROOT / "zsh" / "env.zsh"
 
@@ -272,8 +269,9 @@ def check(config):
 
     status |= check_repo()
     status |= check_links(config["link"])
-    status |= check_nvim(config["nvim"])
     status |= check_fonts(config["fonts"])
+    status |= check_pip_packages(config["pip_packages"])
+    status |= check_nvim()
     status |= check_zsh()
 
     if status == EXIT_SUCCESS:
@@ -283,8 +281,7 @@ def check(config):
 
     return status
 
-
-def uninstall(): ...
+    def uninstall(): ...
 
 
 def dispatch(args, config):
@@ -320,7 +317,6 @@ def run():
     with CONFIG_PATH.open("r") as f:
         config = yaml.safe_load(f)
     return dispatch(args, config)
-    ...
 
 
 if __name__ == "__main__":
