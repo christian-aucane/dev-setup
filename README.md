@@ -53,7 +53,7 @@ This repository is designed to be:
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/setup-linux.git
+git clone https://github.com/christian-aucane/setup-linux.git
 cd ~/setup-linux
 ```
 
@@ -119,6 +119,23 @@ They are symlinked to:
 ~/.zshrc
 ```
 
+An optional environment-specific file can be used:
+
+- `zsh/env.zsh` (ignored by git)
+
+It is automatically sourced by .zshrc and is meant for machine-specific tweaks (custom PATH, local binaries, school/work setup, etc.).
+
+An example is provided:
+```bash
+zsh/env.zsh.example
+```
+
+To use it:
+```bash
+cp zsh/env.zsh.example zsh/env.zsh
+```
+and update it.
+
 No external framework (Oh-My-Zsh, etc.) is required, but you can add one on top if you want.
 
 ---
@@ -157,6 +174,8 @@ The following files are intentionally not tracked:
 
 They are machine-specific and auto-generated.
 
+- `env.zsh`
+(This is environment-specific zsh configuration)
 ---
 
 ## Philosophy 🧘

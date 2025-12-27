@@ -27,3 +27,6 @@ compinit
 
 # Prompt (doit être chargé en dernier)
 [[ -f "$REPO_ZSH_DIR/prompt.zsh" ]] && source "$REPO_ZSH_DIR/prompt.zsh"
+
+# Load environment-specific overrides if present
+[ -f "$HOME/.config/env.zsh" ] && source "$HOME/.config/env.zsh"
