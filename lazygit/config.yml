@@ -1,0 +1,21 @@
+# Lazygit user configuration
+# Minimal & clean setup
+
+gui:
+  nerdFontsVersion: "3"
+  filterMode: fuzzy
+  showRandomTip: false
+
+git:
+  log:
+    showGraph: always
+    order: topo-order
+
+  autoFetch: true
+  autoForwardBranches: onlyMainBranches
+
+os:
+  editPreset: nvim
+
+disableStartupPopups: true
+confirmOnQuit: false

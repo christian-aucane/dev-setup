@@ -304,6 +304,17 @@ def check_zsh():
     return EXIT_SUCCESS
 
 
+def check_lazygit():
+    log("[CHECK] lazygit")
+
+    if not shutil.which("lazygit"):
+        log("[ERROR] lazygit not found")
+        return EXIT_ERROR
+
+    log("[OK] lazygit found")
+    return EXIT_SUCCESS
+
+
 def check(config):
     status = EXIT_SUCCESS
 
@@ -313,6 +324,7 @@ def check(config):
     status |= check_pip_packages(config["pip_packages"])
     status |= check_nvim()
     status |= check_zsh()
+    status |= check_lazygit()
 
     if status == EXIT_SUCCESS:
         log("[OK] all checks passed")
