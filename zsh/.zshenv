@@ -10,5 +10,8 @@ export DOTFILES="${ZSHENV_DIR:h}"
 # Évite de charger la conf interactive dans les scripts
 export ZDOTDIR="$HOME"
 
-# PATH de base (minimal)
-export PATH="$HOME/bin:$PATH"
+# User specific environment
+if ! [[ ":$PATH:" == *":$HOME/.local/bin:$HOME/bin:"* ]]; then
+    PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+fi
+export PATH
