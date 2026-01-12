@@ -1,16 +1,49 @@
 from datetime import datetime
+from pathlib import Path
 
-from utils import log, ask_confirmation, get_src_path, get_dest_path
+from utils import log, ask_confirmation, get_platform, get_src_path, get_dest_path
 
 
-# TODO: separer les responsabilites
+def backup_path(path: Path) -> Path:
+    """Créer un backup horodaté pour un fichier ou dossier existant."""
+    now_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    backup = path.with_name(f"{path.name}.backup_{now_str}")
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+    else:
+        path.rename(backup)
+    log(f"[BACKUP] {path} -> {backup}")
+    return backup
+
+
+def create_link(src: Path, dest: Path) -> bool:
+    """Créer un symlink, avec fallback Windows si nécessaire."""
+    try:
+        dest.symlink_to(src, target_is_directory=src.is_dir())
+        log(f"[LINK] {dest} -> {src}")
+        return True
+    except (OSError, NotImplementedError) as e:
+        if get_platform() == "windows":
+            # fallback: copie si symlink impossible
+            if src.is_dir():
+                shutil.copytree(src, dest)
+            else:
+                shutil.copy2(src, dest)
+            log(f"[FALLBACK] Copied {src} -> {dest}")
+            return True
+        else:
+            log(f"[ERROR] Failed to link {dest} -> {src}: {e}")
+            return False
+
+
 def run(links_config) -> bool:
+    """Boucle principale pour créer tous les liens."""
     for entry in links_config:
         src = get_src_path(entry["src"])
         dest = get_dest_path(entry["dest"])
 
         if not src.exists():
-            log(f"[ERROR] source doesn't exist: '{src}'")
+            log(f"[ERROR] Source doesn't exist: '{src}'")
             return False
 
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -20,23 +53,15 @@ def run(links_config) -> bool:
             log(f"[OK] '{dest}' already linked")
             continue
 
-        # Sinon, si le fichier/symlink existe, backup ou supprimer
+        # Si le fichier/dossier existe, demander backup
         if dest.exists() or dest.is_symlink():
             if not ask_confirmation(f"{dest} exists. Backup and replace?"):
                 log(f"[SKIP] '{dest}'")
                 continue
-            now_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            backup = dest.with_name(f"{dest.name}.backup_{now_str}")
+            backup_path(dest)
 
-            if dest.is_symlink() or dest.is_file():
-                dest.unlink()  # supprime symlink ou fichier
-            else:
-                dest.rename(backup)  # pour dossier, si jamais
-
-            log(f"[BACKUP] {dest} -> {backup}")
-
-        # ✅ Créer le symlink après backup
-        dest.symlink_to(src)
-        log(f"[LINK] {dest} -> {src}")
+        # Créer le lien ou fallback
+        if not create_link(src, dest):
+            return False
 
     return True
