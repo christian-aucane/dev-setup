@@ -6,6 +6,7 @@
 
 ZSHRC_REALPATH="${${(%):-%N}:A}"
 REPO_ZSH_DIR="$(dirname "$ZSHRC_REALPATH")"
+
 # 1️⃣ Options Zsh (setopt, HISTFILE, etc.)
 source "$REPO_ZSH_DIR/options.zsh"
 
@@ -29,4 +30,4 @@ compinit
 [[ -f "$REPO_ZSH_DIR/prompt.zsh" ]] && source "$REPO_ZSH_DIR/prompt.zsh"
 
 # Load environment-specific overrides if present
-[ -f "$HOME/.config/env.zsh" ] && source "$HOME/.config/env.zsh"
+[ -f "$REPO_ZSH_DIR/env.zsh" ] && source "$REPO_ZSH_DIR/env.zsh"
