@@ -1,7 +1,7 @@
 .PHONY: help link install update check
 
 PYTHON := python3
-COMMANDS_SCRIPT := make_commands.py
+COMMANDS_SCRIPT := make_commands/main.py
 
 help:
 	@echo "🛠️  Available commands:"
