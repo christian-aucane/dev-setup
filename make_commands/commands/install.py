@@ -7,8 +7,8 @@ from utils import log, get_src_path, get_dest_path
 
 def install_fonts(fonts_config):
     log("[INSTALL] fonts")
-    src = get_src_path(fonts_config["src"])
-    dest = get_dest_path(fonts_config["dest"])
+    src = get_src_path(fonts_config["src_dir"])
+    dest = get_dest_path(fonts_config["dest_dir"])
 
     dest.mkdir(parents=True, exist_ok=True)
     for font in src.glob("*.ttf"):
