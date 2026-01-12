@@ -1,8 +1,8 @@
 import shutil
 
-from link import run as run_link
-from utils import log, get_src_path, get_dest_path
+from .link import run as run_link
 from .system_commands import reload_fonts_cache, pip_install, git_pull
+from utils import log, get_src_path, get_dest_path
 
 
 def install_fonts(fonts_config):

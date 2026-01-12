@@ -8,7 +8,7 @@ def execute_command(*args, **kwargs):
     command = list(args)
     command_str = " ".join(command)
     log(f"[INFO] Execute command : {command_str}")
-    subprocess.run(command, **kwargs)
+    return subprocess.run(command, **kwargs)
 
 
 def reload_fonts_cache() -> bool:

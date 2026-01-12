@@ -1,9 +1,9 @@
+from .system_commands import git_pull
+from .link import run as run_link
 from utils import log
-from system_commands import git pull
-from link import run as run_link
 
 
-def update(config):
+def run(config):
     log("[UPDATE] full setup")
 
     log("[UPDATE] git pull")

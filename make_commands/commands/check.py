@@ -1,7 +1,7 @@
 import shutil
 
+from .system_commands import git_is_up_to_date, pip_package_is_installed
 from constants import REPO_ROOT
-from system_commands import git_is_up_to_date, pip_package_is_installed
 from utils import log, get_src_path, get_dest_path
 
 

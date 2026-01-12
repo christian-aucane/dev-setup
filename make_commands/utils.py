@@ -24,4 +24,4 @@ def get_src_path(entry: str) -> Path:
 
 
 def get_dest_path(entry: str) -> Path:
-    return Path(entry["dest"]).expanduser()
+    return Path(entry).expanduser()
