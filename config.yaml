@@ -1,17 +1,35 @@
-link:
-  - src: zsh/.zshenv
-    dest: ~/.zshenv
-  - src: zsh/.zshrc
-    dest: ~/.zshrc
-  - src: neovide
-    dest: ~/.config/neovide
-  - src: nvim
-    dest: ~/.config/nvim
-  - src: lazygit/
-    dest: ~/.config/lazygit/
-pip_packages:
-  - norminette
-  - c-formatter-42
-fonts:
-  src_dir: fonts
-  dest_dir: ~/.local/share/fonts
+linux:
+  links:
+    - src: zsh/.zshenv
+      dest: ~/.zshenv
+    - src: zsh/.zshrc
+      dest: ~/.zshrc
+    - src: neovide
+      dest: ~/.config/neovide
+    - src: nvim
+      dest: ~/.config/nvim
+    - src: lazygit/
+      dest: ~/.config/lazygit/
+  pip_packages:
+    - norminette
+    - c-formatter-42
+  fonts:
+    src_dir: fonts
+    dest_dir: ~/.local/share/fonts
+windows:
+  links:
+    - src: nvim
+      dest: "%LOCALAPPDATA%/nvim"
+
+    - src: neovide
+      dest: "%APPDATA%/neovide"
+
+    - src: lazygit
+      dest: "%APPDATA%/lazygit"
+  pip_packages:
+    - pynvim
+    - norminette
+    - c-formatter-42
+  fonts:
+    src_dir: fonts
+    dest_dir: "%LOCALAPPDATA%/Microsoft/Windows/Fonts"
