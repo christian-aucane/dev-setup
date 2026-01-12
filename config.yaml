@@ -7,8 +7,8 @@ link:
     dest: ~/.config/neovide
   - src: nvim
     dest: ~/.config/nvim
-  - src: lazygit/config.yml
-    dest: ~/.config/lazygit/config.yml
+  - src: lazygit/
+    dest: ~/.config/lazygit/
 pip_packages:
   - norminette
   - c-formatter-42
