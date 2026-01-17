@@ -1,5 +1,4 @@
 # Linux Setup 🚀
-HELLO WORLD
 ![Neovim](https://img.shields.io/badge/Neovim-0.9+-green)
 ![Neovide](https://img.shields.io/badge/Neovide-GUI-blue)
 ![Zsh](https://img.shields.io/badge/Shell-Zsh-orange)
