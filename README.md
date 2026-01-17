@@ -5,6 +5,7 @@
 ![Zsh](https://img.shields.io/badge/Shell-Zsh-orange)
 ![Font](https://img.shields.io/badge/Font-FiraCode%20Nerd%20Font-purple)
 
+
 Personal **Linux development environment setup**, focused on **Neovim**, **Neovide**, **Zsh**, and clean dotfile management.
 
 This repository is designed to be:
