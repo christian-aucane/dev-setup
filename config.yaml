@@ -16,6 +16,14 @@ linux:
   fonts:
     src_dir: fonts
     dest_dir: ~/.local/share/fonts
+  gnome:
+    extensions:
+      - uuid: tiling-assistant@leleat-on-github
+        dconf_filename: gnome/tiling-assistant.dconf
+      - uuid: dash-to-dock@micxgx.gmail.com
+        dconf_filename: gnome/dash-to-dock.dconf
+      - uuid: clipboard-indicator@tudmotu.com
+        dconf_filename: gnome/clipboard-indicator.dconf
 windows:
   links:
     - src: nvim
