@@ -1,4 +1,5 @@
 from datetime import datetime
+import shutil
 from pathlib import Path
 
 from utils import log, ask_confirmation, get_platform, get_src_path, get_dest_path
@@ -31,20 +32,21 @@ def create_link(src: Path, dest: Path) -> bool:
                 shutil.copy2(src, dest)
             log(f"[FALLBACK] Copied {src} -> {dest}")
             return True
-        else:
-            log(f"[ERROR] Failed to link {dest} -> {src}: {e}")
-            return False
+        log(f"[ERROR] Failed to link {dest} -> {src}: {e}")
+        return False
 
 
 def run(links_config) -> bool:
     """Boucle principale pour créer tous les liens."""
+    success = True
     for entry in links_config:
         src = get_src_path(entry["src"])
         dest = get_dest_path(entry["dest"])
 
         if not src.exists():
             log(f"[ERROR] Source doesn't exist: '{src}'")
-            return False
+            success = False
+            continue
 
         dest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -62,6 +64,6 @@ def run(links_config) -> bool:
 
         # Créer le lien ou fallback
         if not create_link(src, dest):
-            return False
+            success = False
 
-    return True
+    return success

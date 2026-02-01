@@ -1,14 +1,14 @@
 from pathlib import Path
 import shutil
 
-from commands.system_commands import (
+from utils import log, get_src_path, get_dest_path
+from constants import REPO_ROOT
+from .system_commands import (
     git_is_up_to_date,
     pip_package_is_installed,
     get_gnome_shell_version,
     is_gnome_extension_installed,
 )
-from utils import log, get_src_path, get_dest_path
-from constants import REPO_ROOT
 
 
 def check_repo():
@@ -98,7 +98,7 @@ def check_fonts(fonts_config):
         return False
 
     log(f"[OK] {len(fonts)} fonts installed")
-    return False
+    return True
 
 
 def check_zsh():
@@ -116,7 +116,7 @@ def check_zsh():
     else:
         log("[INFO] env.zsh not found (optional)")
 
-    return False
+    return True
 
 
 def check_lazygit():

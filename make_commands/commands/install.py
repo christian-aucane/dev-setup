@@ -17,31 +17,52 @@ from .fetch_commands import download_gnome_extension
 
 def install_fonts(fonts_config) -> bool:
     log("[INSTALL] fonts")
-    try:
-        src = get_src_path(fonts_config["src_dir"])
-        dest = get_dest_path(fonts_config["dest_dir"])
 
-        dest.mkdir(parents=True, exist_ok=True)
-        for font in src.glob("*.ttf"):
-            shutil.copy2(font, dest)
+    src = get_src_path(fonts_config["src_dir"])
+    dest = get_dest_path(fonts_config["dest_dir"])
 
-        reload_fonts_cache()
-        log("[OK] fonts successfully installed !")
-        return True
-    except Exception as e:
-        log(f"[ERROR] Failed to install fonts: {e}")
+    if not src.exists():
+        log(f"[ERROR] Fonts source directory not found: {src}")
         return False
+
+    dest.mkdir(parents=True, exist_ok=True)
+
+    fonts = list(src.glob("*.ttf"))
+    if not fonts:
+        log("[WARN] No font files found to install")
+        return False
+
+    installed_any = False
+    for font in fonts:
+        dest_file = dest / font.name
+        if dest_file.exists():
+            log(f"[SKIP] {dest_file} already exists")
+            continue
+        try:
+            shutil.copy2(font, dest_file)
+            installed_any = True
+            log(f"[OK] Installed {dest_file}")
+        except (FileNotFoundError, PermissionError) as e:
+            log(f"[ERROR] Failed to copy font {font}: {e}")
+            return False
+
+    if installed_any:
+        if not reload_fonts_cache():
+            log("[ERROR] Failed to reload font cache")
+            return False
+        log("[OK] fonts successfully installed and cache reloaded !")
+    else:
+        log("[INFO] All fonts already installed, nothing to do")
+
+    return True
 
 
 def install_pip_packages(packages) -> bool:
     log("[INSTALL] Python dependencies")
-    try:
-        pip_install(packages)
+    if pip_install(packages):
         log("[OK] Python dependencies successfully installed !")
         return True
-    except Exception as e:
-        log(f"[ERROR] Failed to install Python packages: {e}")
-        return False
+    return False
 
 
 def install_gnome(gnome_config: list[dict]) -> bool:

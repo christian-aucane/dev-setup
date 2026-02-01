@@ -1,7 +1,7 @@
 import subprocess
 import sys
-import json
 from pathlib import Path
+
 from utils import log, ask_confirmation
 from constants import REPO_ROOT
 
@@ -9,28 +9,39 @@ from constants import REPO_ROOT
 def execute_command(*args, **kwargs):
     command = list(args)
     command_str = " ".join(command)
-    log(f"[INFO] Execute command : {command_str}")
+    log(f"[EXECUTE COMMAND] {command_str}")
     return subprocess.run(command, **kwargs)
 
 
 def reload_fonts_cache() -> bool:
-    # TODO: adapter a windows
-    execute_command("fc-cache", "-fv")
-    return True
+    try:
+        execute_command("fc-cache", "-fv", check=True)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        log(f"[ERROR] Failed to reload fonts cache: {e}")
+        return False
 
 
 def pip_install(packages, *args) -> bool:
-    execute_command(
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "--user",
-        *packages,
-        *args,
-        check=True,
-    )
-    return True
+    """
+    Installe des packages Python avec pip pour l'utilisateur courant.
+    Retourne True si succès, False sinon.
+    """
+    try:
+        execute_command(
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--user",
+            *packages,
+            *args,
+            check=True,
+        )
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        log(f"[ERROR] Failed to install pip packages {packages}: {e}")
+        return False
 
 
 def pip_package_is_installed(package) -> bool:
