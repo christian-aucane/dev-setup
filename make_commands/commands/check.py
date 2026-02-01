@@ -1,16 +1,14 @@
+from pathlib import Path
+import shutil
+
 from commands.system_commands import (
+    git_is_up_to_date,
+    pip_package_is_installed,
     get_gnome_shell_version,
     is_gnome_extension_installed,
 )
-from utils import log
-from pathlib import Path
-import shutil
-from commands.system_commands import execute_command
-from commands.install import is_gnome_extension_installed
-
-from .system_commands import git_is_up_to_date, pip_package_is_installed
-from constants import REPO_ROOT
 from utils import log, get_src_path, get_dest_path
+from constants import REPO_ROOT
 
 
 def check_repo():
@@ -95,8 +93,7 @@ def check_fonts(fonts_config):
         log(f"[ERROR] fonts dir missing: {dest}")
         return False
 
-    fonts = list(dest.glob("*.ttf"))
-    if not fonts:
+    if not (fonts := list(dest.glob("*.ttf"))):
         log("[WARN] no fonts found")
         return False
 
@@ -133,62 +130,59 @@ def check_lazygit():
     return True
 
 
+def check_gnome_extention(uuid, dconf_file):
+    if not uuid:
+        log("[ERROR] GNOME extension entry without UUID, skipping")
+        return False
+
+    log(f"[CHECK] GNOME extension '{uuid}'")
+
+    if not is_gnome_extension_installed(uuid):
+        log(f"[ERROR] Extension NOT installed: {uuid}")
+        return False
+    log(f"[OK] Extension installed: {uuid}")
+
+    if dconf_file:
+        dconf_path = Path(dconf_file)
+        if not dconf_path.exists():
+            log(f"[ERROR] Missing dconf file: {dconf_file}")
+            return False
+        log(f"[OK] Dconf file found: {dconf_file}")
+    return True
+
+
 def check_gnome(gnome_config: dict) -> bool:
     if not gnome_config:
         return True
     log("[CHECK] Gnome")
-    gnome_version = get_gnome_shell_version()
-    if not gnome_version:
+    if not (gnome_version := get_gnome_shell_version()):
         log("[ERROR] GNOME Shell is required but not detected")
         return False
-
     log(f"[INFO] GNOME Shell version detected: {gnome_version}")
 
-    extensions = gnome_config.get("extensions", [])
-    if not extensions:
+    if not (extensions := gnome_config.get("extensions")):
         log("[INFO] No GNOME extensions configured")
         return True
 
     all_ok = True
-
     for ext in extensions:
         uuid = ext.get("uuid")
         dconf_file = ext.get("dconf_filename")
-
-        if not uuid:
-            log("[WARN] GNOME extension entry without UUID, skipping")
-            continue
-
-        log(f"[CHECK] GNOME extension '{uuid}'")
-
-        if is_gnome_extension_installed(uuid):
-            log(f"[OK] Extension installed: {uuid}")
-        else:
-            log(f"[ERROR] Extension NOT installed: {uuid}")
-            all_ok = False
-
-        if dconf_file:
-            dconf_path = Path(dconf_file)
-            if dconf_path.exists():
-                log(f"[OK] Dconf file found: {dconf_file}")
-            else:
-                log(f"[ERROR] Missing dconf file: {dconf_file}")
-                all_ok = False
-
+        all_ok &= check_gnome_extention(uuid, dconf_file)
     return all_ok
 
 
 def run(config):
     status = True
 
-    status |= check_repo()
-    status |= check_links(config["links"])
-    status |= check_fonts(config["fonts"])
-    status |= check_pip_packages(config["pip_packages"])
-    status |= check_nvim()
-    status |= check_zsh()
-    status |= check_lazygit()
-    status |= check_gnome(config.get("gnome"))
+    status &= check_repo()
+    status &= check_links(config["links"])
+    status &= check_fonts(config["fonts"])
+    status &= check_pip_packages(config["pip_packages"])
+    status &= check_nvim()
+    status &= check_zsh()
+    status &= check_lazygit()
+    status &= check_gnome(config.get("gnome"))
 
     if not status:
         log("[WARN] some checks failed")

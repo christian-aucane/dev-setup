@@ -10,45 +10,54 @@ from .system_commands import (
     get_gnome_shell_version,
     install_gnome_extension,
     is_gnome_extension_installed,
+    load_gnome_dconf,
 )
 from .fetch_commands import download_gnome_extension
 
 
-def install_fonts(fonts_config):
+def install_fonts(fonts_config) -> bool:
     log("[INSTALL] fonts")
-    src = get_src_path(fonts_config["src_dir"])
-    dest = get_dest_path(fonts_config["dest_dir"])
+    try:
+        src = get_src_path(fonts_config["src_dir"])
+        dest = get_dest_path(fonts_config["dest_dir"])
 
-    dest.mkdir(parents=True, exist_ok=True)
-    for font in src.glob("*.ttf"):
-        shutil.copy2(font, dest)
+        dest.mkdir(parents=True, exist_ok=True)
+        for font in src.glob("*.ttf"):
+            shutil.copy2(font, dest)
 
-    reload_fonts_cache()
-    log("[OK] fonts successfully installed !")
+        reload_fonts_cache()
+        log("[OK] fonts successfully installed !")
+        return True
+    except Exception as e:
+        log(f"[ERROR] Failed to install fonts: {e}")
+        return False
 
 
-def install_pip_packages(packages):
+def install_pip_packages(packages) -> bool:
     log("[INSTALL] Python dependencies")
-    pip_install(packages)
-    log("[OK] Python dependencies successfully installed !")
+    try:
+        pip_install(packages)
+        log("[OK] Python dependencies successfully installed !")
+        return True
+    except Exception as e:
+        log(f"[ERROR] Failed to install Python packages: {e}")
+        return False
 
 
-def install_gnome_extensions(gnome_config: list[dict]):
+def install_gnome(gnome_config: list[dict]) -> bool:
     """
     Installe et configure toutes les extensions GNOME listées dans gnome_config.
-
-    gnome_config : liste de dicts avec les clés suivantes :
-        - uuid : UUID de l'extension
-        - dconf_file : chemin vers le fichier de configuration dconf (optionnel)
     """
-
     if not gnome_config:
-        return
-    log("INSTALL] Gnome")
+        return True
+
+    log("[INSTALL] Gnome")
+
     shell_version = get_gnome_shell_version()
     if not shell_version:
         log(
-            "[ERROR] Could not determine GNOME Shell version. Aborting GNOME extensions installation."
+            "[ERROR] Could not determine GNOME Shell version."
+            "\tAborting GNOME extensions installation."
         )
         return False
     log(f"[INFO] GNOME Shell version detected: {shell_version}")
@@ -65,18 +74,17 @@ def install_gnome_extensions(gnome_config: list[dict]):
         log(f"[INFO] Processing extension '{uuid}'")
 
         if is_gnome_extension_installed(uuid):
-            log("[INFO] Extension allready installed.")
-            continue
-        zip_path = download_gnome_extension(uuid, shell_version)
-        if not zip_path:
-            log(f"[WARN] Skipping '{uuid}' due to download failure")
-            all_success = False
-            continue
-        success = install_gnome_extension(uuid, zip_path)
-        if not success:
-            log(f"[ERROR] Failed to install extension '{uuid}'")
-            all_success = False
-            continue
+            log("[INFO] Extension already installed.")
+        else:
+            zip_path = download_gnome_extension(uuid, shell_version)
+            if not zip_path:
+                log(f"[WARN] Skipping '{uuid}' due to download failure")
+                all_success = False
+                continue
+            if not install_gnome_extension(uuid, zip_path):
+                log(f"[ERROR] Failed to install extension '{uuid}'")
+                all_success = False
+                continue
 
         # Charger la config dconf si disponible
         if dconf_file:
@@ -92,17 +100,22 @@ def install_gnome_extensions(gnome_config: list[dict]):
         log("[OK] All GNOME extensions installed and configured successfully!")
     else:
         log("[WARN] Some GNOME extensions failed to install or configure. Check logs.")
+    return all_success
 
 
 def run(config) -> bool:
     log("[INSTALL] full setup")
 
-    log("[INSTALL] git pull")
-    git_pull()
-    if not run_link(config["links"]):
-        return False
-    install_fonts(config["fonts"])
-    # install_pip_packages(config["pip_packages"])
-    install_gnome_extensions(config.get("gnome"))
-    log("[OK] full setup successfully installed !")
-    return True
+    status = True
+
+    status &= git_pull()
+    status &= run_link(config["links"])
+    status &= install_fonts(config["fonts"])
+    status &= install_pip_packages(config["pip_packages"])
+    status &= install_gnome(config.get("gnome"))
+
+    if status:
+        log("[OK] full setup successfully installed !")
+    else:
+        log("[WARN] Full setup finished with some errors. Check logs.")
+    return status

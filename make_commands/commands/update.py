@@ -2,6 +2,7 @@ from .system_commands import (
     git_pull,
     get_gnome_shell_version,
     is_gnome_extension_installed,
+    load_gnome_dconf,
 )
 from .fetch_commands import download_gnome_extension
 from .link import run as run_link
@@ -83,7 +84,8 @@ def run(config):
     if not run_link(config["links"]):
         return False
 
-    update_gnome(config.get("gnome"))
+    if not update_gnome(config.get("gnome")):
+        return False
 
     log("\n[OK] update finished")
     return True
