@@ -136,7 +136,7 @@ def check_lazygit():
 def check_gnome(gnome_config: dict) -> bool:
     if not gnome_config:
         return True
-    # GNOME est requis → on échoue si absent
+    log("[CHECK] Gnome")
     gnome_version = get_gnome_shell_version()
     if not gnome_version:
         log("[ERROR] GNOME Shell is required but not detected")
