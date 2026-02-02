@@ -62,7 +62,7 @@ git_prompt() {
     state="!"
   # repo dirty
   elif ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-    color="%F{blue}"
+    color="%F{yellow}"
     state="*"
   fi
 
