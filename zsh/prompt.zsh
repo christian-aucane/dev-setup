@@ -66,7 +66,7 @@ git_prompt() {
     state="*"
   fi
 
-  echo "${color}${state}${branch}%f"
+  echo " ${color}${state}${branch}%f"
 }
 
 # -----------------------------------------
@@ -82,4 +82,4 @@ local prompt_char="%F{magenta}»%f"
 # -----------------------------------------
 # Prompt final
 # -----------------------------------------
-PROMPT=' ${exit_status} ${user_os} ${cwd} $(git_prompt) ${prompt_char} '
+PROMPT=' ${exit_status} ${user_os} ${cwd}$(git_prompt) ${prompt_char} '
