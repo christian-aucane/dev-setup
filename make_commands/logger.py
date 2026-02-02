@@ -28,6 +28,7 @@ class Level(Enum):
     UPDATE = ("UPDATE", "\t", "🔄", Color.MAGENTA)
     LINK = ("LINK", "\t\t", "🔗", Color.MAGENTA)
     EXEC = ("EXEC", "\t\t", "⚡", Color.GRAY)
+    INPUT = ("INPUT", "\t\t", "📝", Color.CYAN)
 
     # Status / résultats
     SUCCESS = ("SUCCESS", "\t", "✔️", Color.GREEN)
@@ -97,6 +98,9 @@ class Logger:
 
     def exec(self, message: str, *, inline: bool = False) -> None:
         self._log(Level.EXEC, message, inline=inline)
+
+    def input(self, message: str, *, inline: bool = False) -> None:
+        self.log(Level.INPUT, message, inline=inline)
 
     def success(self, message: str) -> None:
         self._log(Level.SUCCESS, message)
