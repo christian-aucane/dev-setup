@@ -16,7 +16,7 @@ colors
 local exit_status='%(?.%F{green}✔.%F{red}✘)'
 
 # User@host (en bleu)
-local user_host='%F{blue}%n@%m%f'
+local user_host='%F{blue}%n'
 
 # Répertoire courant (chemin abrégé)
 local cwd='%F{yellow}%~%f'
