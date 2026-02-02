@@ -1,4 +1,6 @@
-from utils import log
+from pathlib import Path
+
+from logger import logger
 from .system_commands import (
     git_pull,
     get_gnome_shell_version,
@@ -9,69 +11,76 @@ from .fetch_commands import download_gnome_extension
 from .link import run as run_link
 
 
-def update_gnome(gnome_config: list[dict]):
+def update_gnome(gnome_config: dict) -> bool:
     """
     Met à jour les extensions GNOME listées dans gnome_config.
-
-    gnome_config : liste de dicts avec les clés suivantes :
-        - uuid : UUID de l'extension
-        - dconf_file : chemin vers le fichier de configuration dconf (optionnel)
     """
     if not gnome_config:
         return True
-    log("[UPDATE] Gnome")
-    if not (shell_version := get_gnome_shell_version()):
-        log(
-            "[ERROR] Could not determine GNOME Shell version. Aborting GNOME extensions update."
+
+    logger.update("Gnome")
+
+    shell_version = get_gnome_shell_version()
+    if not shell_version:
+        logger.error(
+            "Could not determine GNOME Shell version. Aborting GNOME extensions update."
         )
         return False
-    log(f"[INFO] GNOME Shell version detected: {shell_version}")
+
+    logger.info(f"GNOME Shell version detected: {shell_version}")
 
     all_success = True
+
     for ext in gnome_config.get("extensions", []):
-        if not (uuid := ext.get("uuid")):
-            log("[WARN] Skipping extension with missing UUID")
+        uuid = ext.get("uuid")
+        dconf_file = ext.get("dconf_file")
+
+        if not uuid:
+            logger.warn("Skipping extension with missing UUID")
             continue
 
-        log(f"[INFO] Checking extension '{uuid}'")
+        logger.info(f"Checking extension '{uuid}'")
+
         if is_gnome_extension_installed(uuid):
-            log("[INFO] Extension allready installed")
+            logger.info("Extension already installed (nothing to update)")
             continue
 
-        if not (zip_path := download_gnome_extension(uuid, shell_version)):
-            log(f"[WARN] Skipping '{uuid}' due to download failure")
+        zip_path = download_gnome_extension(uuid, shell_version)
+        if not zip_path:
+            logger.warn(f"Skipping '{uuid}' due to download failure")
             all_success = False
             continue
 
-        if dconf_file := ext.get("dconf_file"):
+        if dconf_file:
             dconf_path = Path(dconf_file).expanduser()
             if not dconf_path.exists():
-                log(f"[ERROR] Dconf file not found: {dconf_path}")
+                logger.error(f"Dconf file not found: {dconf_path}")
                 all_success = False
             else:
                 if not load_gnome_dconf(uuid, dconf_path):
-                    log(f"[ERROR] Failed to load dconf for '{uuid}'")
+                    logger.error(f"Failed to load dconf for '{uuid}'")
                     all_success = False
 
     if all_success:
-        log("[OK] All GNOME extensions updated successfully!")
-        return True
+        logger.success("All GNOME extensions updated successfully")
     else:
-        log("[WARN] Some GNOME extensions failed to update. Check logs.")
-        return False
+        logger.warn("Some GNOME extensions failed to update")
+
+    return all_success
 
 
-def run(config):
-    log("[UPDATE] full setup")
+def run(config) -> bool:
+    logger.update("full setup")
 
-    if not git_pull():
-        return False
+    status = True
 
-    if not run_link(config["links"]):
-        return False
+    status &= git_pull()
+    status &= run_link(config["links"])
+    status &= update_gnome(config.get("gnome"))
 
-    if not update_gnome(config.get("gnome")):
-        return False
+    if status:
+        logger.success("Update finished successfully")
+    else:
+        logger.warn("Update finished with some errors")
 
-    log("\n[OK] update finished")
-    return True
+    return status

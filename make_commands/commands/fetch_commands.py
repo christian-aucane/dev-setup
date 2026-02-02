@@ -1,31 +1,34 @@
 import requests
 from pathlib import Path
 
-from utils import log
+from logger import logger
 
 
-def download_gnome_extension(uuid: str, gnome_version: str) -> Path:
+def download_gnome_extension(uuid: str, gnome_version: str) -> Path | None:
     """
-    Fetches the latest extension .zip from extensions.gnome.org.
+    Fetch the latest extension .zip from extensions.gnome.org.
     Returns the local path to the downloaded zip file.
     Returns None if the extension is not found or if a network error occurs.
     """
+    logger.execute(f"Download GNOME extension {uuid}")
+
     base_api = "https://extensions.gnome.org/extension-info/"
-    params = {"uuid": uuid, "shell_version": gnome_version.split()[0]}
+    params = {
+        "uuid": uuid,
+        "shell_version": gnome_version.split()[0],
+    }
 
     try:
         resp = requests.get(base_api, params=params, timeout=10)
         resp.raise_for_status()
         data = resp.json()
     except requests.RequestException as e:
-        log(f"[ERROR] Failed to fetch info for '{uuid}': {e}")
+        logger.error(f"Failed to fetch info for '{uuid}': {e}")
         return None
 
     download_path = data.get("download_url")
     if not download_path:
-        log(
-            f"[WARN] No download_url found for '{uuid}' @ shell version {gnome_version}"
-        )
+        logger.warn(f"No download_url for '{uuid}' (GNOME {gnome_version})")
         return None
 
     full_url = f"https://extensions.gnome.org{download_path}"
@@ -36,10 +39,11 @@ def download_gnome_extension(uuid: str, gnome_version: str) -> Path:
             download.raise_for_status()
             with open(zip_filename, "wb") as f:
                 for chunk in download.iter_content(chunk_size=8192):
-                    f.write(chunk)
+                    if chunk:
+                        f.write(chunk)
     except requests.RequestException as e:
-        log(f"[ERROR] Failed to download extension '{uuid}': {e}")
+        logger.error(f"Failed to download '{uuid}': {e}")
         return None
 
-    log(f"[INFO] Downloaded '{uuid}' to {zip_filename}")
+    logger.success(f"Downloaded '{uuid}' → {zip_filename}")
     return zip_filename

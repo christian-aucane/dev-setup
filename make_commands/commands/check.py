@@ -1,7 +1,8 @@
 from pathlib import Path
 import shutil
 
-from utils import log, get_src_path, get_dest_path
+from logger import logger
+from utils import get_src_path, get_dest_path
 from constants import REPO_ROOT
 from .system_commands import (
     git_is_up_to_date,
@@ -11,22 +12,23 @@ from .system_commands import (
 )
 
 
-def check_repo():
-    log("[CHECK] repo")
+def check_repo() -> bool:
+    logger.check("repo")
 
     if not (REPO_ROOT / ".git").exists():
-        log("[ERROR] not a git repository")
+        logger.error("Not a git repository")
         return False
 
     if git_is_up_to_date():
-        log("[OK] repo clean")
+        logger.success("Repository clean")
     else:
-        log("[WARN] repo has uncommitted changes")
+        logger.warn("Repository has uncommitted changes")
+
     return True
 
 
-def check_links(links_config):
-    log("[CHECK] links")
+def check_links(links_config) -> bool:
+    logger.check("links")
     status = True
 
     for entry in links_config:
@@ -34,147 +36,157 @@ def check_links(links_config):
         dest = get_dest_path(entry["dest"])
 
         if not src.exists():
-            log(f"[ERROR] source missing: {src}")
+            logger.error(f"Source missing: {src}")
             status = False
             continue
 
         if not dest.exists():
-            log(f"[MISSING] {dest}")
+            logger.error(f"Missing destination: {dest}")
             status = False
             continue
 
         if not dest.is_symlink():
-            log(f"[WRONG] {dest} is not a symlink")
+            logger.error(f"{dest} is not a symlink")
             status = False
             continue
 
         if dest.resolve() != src:
-            log(f"[WRONG] {dest} -> {dest.resolve()}")
+            logger.error(f"{dest} points to {dest.resolve()} instead of {src}")
             status = False
             continue
 
-        log(f"[OK] {dest}")
+        logger.success(f"{dest}")
 
     return status
 
 
-def check_pip_packages(packages):
-    log("[CHECK] pip packages")
+def check_pip_packages(packages) -> bool:
+    logger.check("pip packages")
     status = True
 
     for pkg in packages:
         if pip_package_is_installed(pkg):
-            log(f"[OK] {pkg}")
+            logger.success(pkg)
         else:
-            log(f"[MISSING] {pkg}")
+            logger.error(f"Missing pip package: {pkg}")
             status = False
 
     return status
 
 
-def check_nvim():
-    log("[CHECK] nvim")
+def check_nvim() -> bool:
+    logger.check("nvim")
 
     if not shutil.which("nvim"):
-        log("[ERROR] nvim not found")
+        logger.error("nvim not found")
         return False
 
-    log("[OK] nvim found")
-
+    logger.success("nvim found")
     return True
 
 
-def check_fonts(fonts_config):
-    log("[CHECK] fonts")
+def check_fonts(fonts_config) -> bool:
+    logger.check("fonts")
 
     dest = get_dest_path(fonts_config["dest_dir"])
 
     if not dest.exists():
-        log(f"[ERROR] fonts dir missing: {dest}")
+        logger.error(f"Fonts directory missing: {dest}")
         return False
 
-    if not (fonts := list(dest.glob("*.ttf"))):
-        log("[WARN] no fonts found")
+    fonts = list(dest.glob("*.ttf"))
+    if not fonts:
+        logger.warn("No fonts found")
         return False
 
-    log(f"[OK] {len(fonts)} fonts installed")
+    logger.success(f"{len(fonts)} fonts installed")
     return True
 
 
-def check_zsh():
-    log("[CHECK] zsh")
+def check_zsh() -> bool:
+    logger.check("zsh")
 
     if not shutil.which("zsh"):
-        log("[ERROR] zsh not found")
+        logger.error("zsh not found")
         return False
-    log("[OK] zsh found")
+
+    logger.success("zsh found")
 
     env_file = REPO_ROOT / "zsh" / "env.zsh"
-
     if env_file.exists():
-        log("[OK] env.zsh present")
+        logger.success("env.zsh present")
     else:
-        log("[INFO] env.zsh not found (optional)")
+        logger.info("env.zsh not found (optional)")
 
     return True
 
 
-def check_lazygit():
-    log("[CHECK] lazygit")
+def check_lazygit() -> bool:
+    logger.check("lazygit")
 
     if not shutil.which("lazygit"):
-        log("[ERROR] lazygit not found")
+        logger.error("lazygit not found")
         return False
 
-    log("[OK] lazygit found")
+    logger.success("lazygit found")
     return True
 
 
-def check_gnome_extention(uuid, dconf_file):
+def check_gnome_extension(uuid: str, dconf_file: str | None) -> bool:
     if not uuid:
-        log("[ERROR] GNOME extension entry without UUID, skipping")
+        logger.error("GNOME extension entry without UUID")
         return False
 
-    log(f"[CHECK] GNOME extension '{uuid}'")
+    logger.check(f"GNOME extension {uuid}")
 
     if not is_gnome_extension_installed(uuid):
-        log(f"[ERROR] Extension NOT installed: {uuid}")
+        logger.error(f"Extension not installed: {uuid}")
         return False
-    log(f"[OK] Extension installed: {uuid}")
+
+    logger.success(f"Extension installed: {uuid}")
 
     if dconf_file:
         dconf_path = Path(dconf_file)
         if not dconf_path.exists():
-            log(f"[ERROR] Missing dconf file: {dconf_file}")
+            logger.error(f"Missing dconf file: {dconf_file}")
             return False
-        log(f"[OK] Dconf file found: {dconf_file}")
+        logger.success(f"Dconf file found: {dconf_file}")
+
     return True
 
 
-def check_gnome(gnome_config: dict) -> bool:
+def check_gnome(gnome_config: dict | None) -> bool:
     if not gnome_config:
         return True
-    log("[CHECK] Gnome")
-    if not (gnome_version := get_gnome_shell_version()):
-        log("[ERROR] GNOME Shell is required but not detected")
-        return False
-    log(f"[INFO] GNOME Shell version detected: {gnome_version}")
 
-    if not (extensions := gnome_config.get("extensions")):
-        log("[INFO] No GNOME extensions configured")
+    logger.check("Gnome")
+
+    gnome_version = get_gnome_shell_version()
+    if not gnome_version:
+        logger.error("GNOME Shell not detected")
+        return False
+
+    logger.info(f"GNOME Shell version: {gnome_version}")
+
+    extensions = gnome_config.get("extensions")
+    if not extensions:
+        logger.info("No GNOME extensions configured")
         return True
 
-    all_ok = True
-    for ext in extensions:
-        uuid = ext.get("uuid")
-        dconf_file = ext.get("dconf_filename")
-        all_ok &= check_gnome_extention(uuid, dconf_file)
-    return all_ok
-
-
-def run(config):
     status = True
+    for ext in extensions:
+        status &= check_gnome_extension(
+            ext.get("uuid"),
+            ext.get("dconf_filename"),
+        )
 
+    return status
+
+
+def run(config) -> bool:
+    logger.check("full setup")
+
+    status = True
     status &= check_repo()
     status &= check_links(config["links"])
     status &= check_fonts(config["fonts"])
@@ -184,8 +196,9 @@ def run(config):
     status &= check_lazygit()
     status &= check_gnome(config.get("gnome"))
 
-    if not status:
-        log("[WARN] some checks failed")
+    if status:
+        logger.success("All checks passed")
     else:
-        log("[OK] all checks passed")
+        logger.warn("Some checks failed")
+
     return status

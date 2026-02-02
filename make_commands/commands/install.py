@@ -1,7 +1,8 @@
 import shutil
 from pathlib import Path
 
-from utils import log, get_src_path, get_dest_path
+from logger import logger
+from utils import get_src_path, get_dest_path
 from .link import run as run_link
 from .system_commands import (
     reload_fonts_cache,
@@ -16,116 +17,125 @@ from .fetch_commands import download_gnome_extension
 
 
 def install_fonts(fonts_config) -> bool:
-    log("[INSTALL] fonts")
+    logger.install("fonts")
 
     src = get_src_path(fonts_config["src_dir"])
     dest = get_dest_path(fonts_config["dest_dir"])
 
     if not src.exists():
-        log(f"[ERROR] Fonts source directory not found: {src}")
+        logger.error(f"Fonts source directory not found: {src}")
         return False
 
     dest.mkdir(parents=True, exist_ok=True)
 
     fonts = list(src.glob("*.ttf"))
     if not fonts:
-        log("[WARN] No font files found to install")
+        logger.warn("No font files found to install")
         return False
 
     installed_any = False
+
     for font in fonts:
         dest_file = dest / font.name
         if dest_file.exists():
-            log(f"[SKIP] {dest_file} already exists")
+            logger.info(f"{dest_file} already exists, skipping")
             continue
+
         try:
             shutil.copy2(font, dest_file)
             installed_any = True
-            log(f"[OK] Installed {dest_file}")
+            logger.success(f"Installed {dest_file}")
         except (FileNotFoundError, PermissionError) as e:
-            log(f"[ERROR] Failed to copy font {font}: {e}")
+            logger.error(f"Failed to copy font {font}: {e}")
             return False
 
     if installed_any:
         if not reload_fonts_cache():
-            log("[ERROR] Failed to reload font cache")
+            logger.error("Failed to reload font cache")
             return False
-        log("[OK] fonts successfully installed and cache reloaded !")
+        logger.success("Fonts installed and cache reloaded")
     else:
-        log("[INFO] All fonts already installed, nothing to do")
+        logger.info("All fonts already installed, nothing to do")
 
     return True
 
 
 def install_pip_packages(packages) -> bool:
-    log("[INSTALL] Python dependencies")
+    logger.install("Python dependencies")
+
     if pip_install(packages):
-        log("[OK] Python dependencies successfully installed !")
+        logger.success("Python dependencies successfully installed")
         return True
+
+    logger.error("Failed to install Python dependencies")
     return False
 
 
-def install_gnome(gnome_config: list[dict]) -> bool:
+def install_gnome(gnome_config: dict) -> bool:
     """
     Installe et configure toutes les extensions GNOME listées dans gnome_config.
     """
     if not gnome_config:
         return True
 
-    log("[INSTALL] Gnome")
+    logger.install("Gnome")
 
     shell_version = get_gnome_shell_version()
     if not shell_version:
-        log(
-            "[ERROR] Could not determine GNOME Shell version."
-            "\tAborting GNOME extensions installation."
+        logger.error(
+            "Could not determine GNOME Shell version. "
+            "Aborting GNOME extensions installation."
         )
         return False
-    log(f"[INFO] GNOME Shell version detected: {shell_version}")
+
+    logger.info(f"GNOME Shell version detected: {shell_version}")
 
     all_success = True
 
     for ext in gnome_config.get("extensions", []):
         uuid = ext.get("uuid")
-        dconf_file = ext.get("dconf_file")  # optionnel
+        dconf_file = ext.get("dconf_file")
+
         if not uuid:
-            log("[WARN] Skipping extension with missing UUID")
+            logger.error("Skipping extension with missing UUID")
+            all_success = False
             continue
 
-        log(f"[INFO] Processing extension '{uuid}'")
+        logger.info(f"Processing extension '{uuid}'")
 
         if is_gnome_extension_installed(uuid):
-            log("[INFO] Extension already installed.")
+            logger.info("Extension already installed")
         else:
             zip_path = download_gnome_extension(uuid, shell_version)
             if not zip_path:
-                log(f"[WARN] Skipping '{uuid}' due to download failure")
-                all_success = False
-                continue
-            if not install_gnome_extension(uuid, zip_path):
-                log(f"[ERROR] Failed to install extension '{uuid}'")
+                logger.warn(f"Skipping '{uuid}' due to download failure")
                 all_success = False
                 continue
 
-        # Charger la config dconf si disponible
+            if not install_gnome_extension(uuid, zip_path):
+                logger.error(f"Failed to install extension '{uuid}'")
+                all_success = False
+                continue
+
         if dconf_file:
             dconf_path = Path(dconf_file).expanduser()
             if not dconf_path.exists():
-                log(f"[WARN] Dconf file not found: {dconf_path}")
+                logger.warn(f"Dconf file not found: {dconf_path}")
             else:
                 if not load_gnome_dconf(uuid, dconf_path):
-                    log(f"[ERROR] Failed to load dconf for '{uuid}'")
+                    logger.error(f"Failed to load dconf for '{uuid}'")
                     all_success = False
 
     if all_success:
-        log("[OK] All GNOME extensions installed and configured successfully!")
+        logger.success("All GNOME extensions installed and configured successfully")
     else:
-        log("[WARN] Some GNOME extensions failed to install or configure. Check logs.")
+        logger.warn("Some GNOME extensions failed to install or configure")
+
     return all_success
 
 
 def run(config) -> bool:
-    log("[INSTALL] full setup")
+    logger.install("full setup")
 
     status = True
 
@@ -136,7 +146,8 @@ def run(config) -> bool:
     status &= install_gnome(config.get("gnome"))
 
     if status:
-        log("[OK] full setup successfully installed !")
+        logger.success("Full setup successfully installed")
     else:
-        log("[WARN] Full setup finished with some errors. Check logs.")
+        logger.warn("Full setup finished with some errors")
+
     return status
