@@ -75,6 +75,8 @@ class Logger:
     ) -> None:
         prefix = self._format_prefix(level)
         msg = self._format_message(message)
+        if level == Level.EXEC:
+            msg = f"{Color.GRAY}{msg}{Color.RESET}"
         output = f"{prefix} {msg}"
 
         if inline:

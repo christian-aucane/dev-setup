@@ -77,6 +77,7 @@ def git_pull() -> bool:
         if git_is_up_to_date():
             logger.info("Repository is up to date!")
             return
+        logger.info("Repository not up to date, pulling...")
         execute_command(
             "git",
             "-C",
@@ -144,11 +145,20 @@ def install_gnome_extension(uuid: str, zip_path: Path) -> bool:
         execute_command(
             "gnome-extensions", "install", "--force", str(zip_path), check=True
         )
-        execute_command("gnome-extensions", "enable", uuid, check=True)
-        logger.success(f"Installed and enabled GNOME extension '{uuid}'")
+        logger.success(f"GNOME extension '{uuid}' installed successfully!")
         return True
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         logger.error(f"Failed to install GNOME extension '{uuid}': {e}")
+        return False
+
+
+def enable_gnome_extension(uuid: str) -> bool:
+    try:
+        execute_command("gnome-extensions", "enable", uuid, check=True)
+        logger.success(f"GNOME extension '{uuid}' enabled successfully!")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to enable GNOME extension '{uuid}': {e}")
         return False
 
 

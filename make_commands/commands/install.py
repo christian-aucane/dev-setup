@@ -10,6 +10,7 @@ from .system_commands import (
     git_pull,
     get_gnome_shell_version,
     install_gnome_extension,
+    enable_gnome_extension,
     is_gnome_extension_installed,
     load_gnome_dconf,
 )
@@ -104,7 +105,7 @@ def install_gnome(gnome_config: dict) -> bool:
         logger.info(f"Processing extension '{uuid}'")
 
         if is_gnome_extension_installed(uuid):
-            logger.info("Extension already installed")
+            logger.info(f"GNOME Extension '{uuid}' already installed")
         else:
             zip_path = download_gnome_extension(uuid, shell_version)
             if not zip_path:
@@ -116,6 +117,7 @@ def install_gnome(gnome_config: dict) -> bool:
                 logger.error(f"Failed to install extension '{uuid}'")
                 all_success = False
                 continue
+        enable_gnome_extension(uuid)
 
         if dconf_file:
             dconf_path = Path(dconf_file).expanduser()

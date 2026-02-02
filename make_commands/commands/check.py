@@ -65,7 +65,7 @@ def check_pip_packages(packages) -> bool:
 
     for pkg in packages:
         if pip_package_is_installed(pkg):
-            logger.success(pkg)
+            logger.success(f"'{pkg}' is installed")
         else:
             logger.error(f"Missing pip package: {pkg}")
             status = False
@@ -109,7 +109,7 @@ def check_zsh() -> bool:
         logger.error("zsh not found")
         return False
 
-    logger.success("zsh found")
+    logger.success("ZSH found")
 
     env_file = REPO_ROOT / "zsh" / "env.zsh"
     if env_file.exists():
