@@ -13,22 +13,21 @@ from .system_commands import (
 
 
 def check_repo() -> bool:
-    logger.check("repo")
+    logger.check("Check repository ...")
 
     if not (REPO_ROOT / ".git").exists():
         logger.error("Not a git repository")
         return False
 
     if git_is_up_to_date():
-        logger.success("Repository clean")
+        logger.success("Repository clean !")
     else:
         logger.warn("Repository has uncommitted changes")
-
     return True
 
 
 def check_links(links_config) -> bool:
-    logger.check("links")
+    logger.check("Check links...")
     status = True
 
     for entry in links_config:
@@ -61,7 +60,7 @@ def check_links(links_config) -> bool:
 
 
 def check_pip_packages(packages) -> bool:
-    logger.check("pip packages")
+    logger.check("Check Python packages...")
     status = True
 
     for pkg in packages:
@@ -75,18 +74,18 @@ def check_pip_packages(packages) -> bool:
 
 
 def check_nvim() -> bool:
-    logger.check("nvim")
+    logger.check("Check Neovim...")
 
     if not shutil.which("nvim"):
-        logger.error("nvim not found")
+        logger.error("Neovim not found")
         return False
 
-    logger.success("nvim found")
+    logger.success("Neovim found")
     return True
 
 
 def check_fonts(fonts_config) -> bool:
-    logger.check("fonts")
+    logger.check("Check fonts...")
 
     dest = get_dest_path(fonts_config["dest_dir"])
 
@@ -104,7 +103,7 @@ def check_fonts(fonts_config) -> bool:
 
 
 def check_zsh() -> bool:
-    logger.check("zsh")
+    logger.check("Check ZSH...")
 
     if not shutil.which("zsh"):
         logger.error("zsh not found")
@@ -122,13 +121,13 @@ def check_zsh() -> bool:
 
 
 def check_lazygit() -> bool:
-    logger.check("lazygit")
+    logger.check("Check Lazygit...")
 
     if not shutil.which("lazygit"):
         logger.error("lazygit not found")
         return False
 
-    logger.success("lazygit found")
+    logger.success("Lazygit found")
     return True
 
 
@@ -137,7 +136,7 @@ def check_gnome_extension(uuid: str, dconf_file: str | None) -> bool:
         logger.error("GNOME extension entry without UUID")
         return False
 
-    logger.check(f"GNOME extension {uuid}")
+    logger.check(f"Check GNOME extension '{uuid}'...")
 
     if not is_gnome_extension_installed(uuid):
         logger.error(f"Extension not installed: {uuid}")
@@ -159,7 +158,7 @@ def check_gnome(gnome_config: dict | None) -> bool:
     if not gnome_config:
         return True
 
-    logger.check("Gnome")
+    logger.check("Check Gnome...")
 
     gnome_version = get_gnome_shell_version()
     if not gnome_version:
@@ -184,7 +183,7 @@ def check_gnome(gnome_config: dict | None) -> bool:
 
 
 def run(config) -> bool:
-    logger.check("full setup")
+    logger.check("Check config...")
 
     status = True
     status &= check_repo()

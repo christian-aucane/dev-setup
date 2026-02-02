@@ -17,7 +17,7 @@ from .fetch_commands import download_gnome_extension
 
 
 def install_fonts(fonts_config) -> bool:
-    logger.install("fonts")
+    logger.install("Install fonts...")
 
     src = get_src_path(fonts_config["src_dir"])
     dest = get_dest_path(fonts_config["dest_dir"])
@@ -61,7 +61,7 @@ def install_fonts(fonts_config) -> bool:
 
 
 def install_pip_packages(packages) -> bool:
-    logger.install("Python dependencies")
+    logger.install("Install Python packages...")
 
     if pip_install(packages):
         logger.success("Python dependencies successfully installed")
@@ -78,7 +78,7 @@ def install_gnome(gnome_config: dict) -> bool:
     if not gnome_config:
         return True
 
-    logger.install("Gnome")
+    logger.install("Install GNOME...")
 
     shell_version = get_gnome_shell_version()
     if not shell_version:
@@ -135,7 +135,7 @@ def install_gnome(gnome_config: dict) -> bool:
 
 
 def run(config) -> bool:
-    logger.install("full setup")
+    logger.install("Instal configuration...")
 
     status = True
 

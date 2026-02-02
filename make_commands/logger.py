@@ -23,17 +23,17 @@ class Color:
 
 class Level(Enum):
     # Actions / étapes
-    INSTALL = ("INSTALL", Color.MAGENTA, "🛠️")
-    CHECK = ("CHECK", Color.MAGENTA, "🔍")
-    UPDATE = ("UPDATE", Color.MAGENTA, "🔄")
-    LINK = ("LINK", Color.MAGENTA, "🔗")
-    EXEC = ("EXEC", Color.GRAY, "⚡")
+    INSTALL = ("INSTALL", "\t", "🛠️", Color.MAGENTA)
+    CHECK = ("CHECK", "\t\t", "🔍", Color.MAGENTA)
+    UPDATE = ("UPDATE", "\t", "🔄", Color.MAGENTA)
+    LINK = ("LINK", "\t\t", "🔗", Color.MAGENTA)
+    EXEC = ("EXEC", "\t\t", "⚡", Color.GRAY)
 
     # Status / résultats
-    SUCCESS = ("SUCCESS", Color.GREEN, "✔️")
-    INFO = ("INFO", Color.BLUE, "ℹ️")
-    WARNING = ("WARN", Color.YELLOW, "⚠️")
-    ERROR = ("ERROR", Color.RED, "❌")
+    SUCCESS = ("SUCCESS", "\t", "✔️", Color.GREEN)
+    INFO = ("INFO", "\t\t", "ℹ️", Color.BLUE)
+    WARNING = ("WARN", "\t\t", "⚠️", Color.YELLOW)
+    ERROR = ("ERROR", "\t\t", "ℹ️", Color.RED)
 
 
 class Logger:
@@ -48,11 +48,11 @@ class Logger:
         self._show_timestamp = show_timestamp
         self._stream = stream
 
-    # ---------- core ----------
+        # ---------- core ----------
 
     def _format_prefix(self, level: Level) -> str:
-        label, color, emoji = level.value
-        prefix = f"[{label}]\t{emoji}"
+        label, tabs, emoji, color = level.value
+        prefix = f"[{label}]{tabs}{emoji}"
 
         if self._enable_colors:
             prefix = f"{color}{prefix}{Color.RESET}"
@@ -81,7 +81,7 @@ class Logger:
         else:
             print(output, file=self._stream)
 
-    # ---------- semantic helpers ----------
+        # ---------- semantic helpers ----------
 
     def install(self, message: str) -> None:
         self._log(Level.INSTALL, message)
@@ -112,4 +112,5 @@ class Logger:
 
 
 # instance globale simple à importer
+logger = Logger()  # instance globale simple à importerlogger=Logger()
 logger = Logger()

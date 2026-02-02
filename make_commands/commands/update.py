@@ -18,7 +18,7 @@ def update_gnome(gnome_config: dict) -> bool:
     if not gnome_config:
         return True
 
-    logger.update("Gnome")
+    logger.update("Update Gnome...")
 
     shell_version = get_gnome_shell_version()
     if not shell_version:
@@ -70,7 +70,7 @@ def update_gnome(gnome_config: dict) -> bool:
 
 
 def run(config) -> bool:
-    logger.update("full setup")
+    logger.update("Update config...")
 
     status = True
 

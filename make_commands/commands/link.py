@@ -24,7 +24,7 @@ def create_link(src: Path, dest: Path) -> bool:
     """Créer un symlink, avec fallback Windows si nécessaire."""
     try:
         dest.symlink_to(src, target_is_directory=src.is_dir())
-        logger.link(f"{dest} -> {src}")
+        logger.link(f"Link created: {dest} -> {src}")
         return True
 
     except (OSError, NotImplementedError) as e:
