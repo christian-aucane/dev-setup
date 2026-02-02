@@ -71,6 +71,7 @@ def git_pull() -> bool:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+        logger.success("Git pull successfully !")
 
     try:
         _git_pull()
