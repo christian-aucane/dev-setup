@@ -59,8 +59,24 @@ def pip_package_is_installed(package) -> bool:
     return result.returncode == 0
 
 
+def git_is_up_to_date() -> bool:
+    result = execute_command(
+        "git",
+        "-C",
+        str(REPO_ROOT),
+        "status",
+        "--porcelain",
+        capture_output=True,
+        text=True,
+    )
+    return not bool(result.stdout.strip())
+
+
 def git_pull() -> bool:
     def _git_pull():
+        if git_is_up_to_date():
+            logger.info("Repository is up to date!")
+            return
         execute_command(
             "git",
             "-C",
@@ -103,19 +119,6 @@ def git_pull() -> bool:
 
         logger.error(f"Git pull failed with exit code {e.returncode}")
         return False
-
-
-def git_is_up_to_date() -> bool:
-    result = execute_command(
-        "git",
-        "-C",
-        str(REPO_ROOT),
-        "status",
-        "--porcelain",
-        capture_output=True,
-        text=True,
-    )
-    return not bool(result.stdout.strip())
 
 
 def get_gnome_shell_version() -> str | None:
