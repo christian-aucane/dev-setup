@@ -1,8 +1,10 @@
+# main.py
 import sys
 import argparse
 import yaml
 
-from utils import log, get_platform
+from logger import logger
+from utils import get_platform
 from constants import EXIT_ERROR, EXIT_SUCCESS, CONFIG_PATH
 from commands import run_link, run_install, run_update, run_check
 
@@ -16,36 +18,32 @@ def dispatch(args, config) -> bool:
     }
     command = args.command
     if command not in commands_mapping:
-        log(f"[ERROR] '{args.command}' is not valid !")
+        logger.error(f"'{args.command}' is not valid !")
         return False
-    return commands_mapping[args.command]()
+    return commands_mapping[command]()
 
 
-def parse_args() -> argparse.ArgumentParser:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Manage setup commands")
     parser.add_argument(
         "command",
         choices=["link", "install", "update", "check"],
         help="The command to execute",
     )
-    args = parser.parse_args(sys.argv[1:])
-    return args
+    return parser.parse_args(sys.argv[1:])
 
 
 def run():
     args = parse_args()
     if not CONFIG_PATH.exists():
-        log(f"[ERROR] Config not found: {CONFIG_PATH}", file=sys.stderr)
+        logger.error(f"Config not found: {CONFIG_PATH}")
         return EXIT_ERROR
     with CONFIG_PATH.open("r") as f:
         config = yaml.safe_load(f)
     platform_name = get_platform()
 
     if platform_name not in config:
-        log(
-            f"[ERROR] no config for platform '{platform_name}' in file {CONFIG_PATH}",
-            file=sys.stderr,
-        )
+        logger.error(f"No config for platform '{platform_name}' in file {CONFIG_PATH}")
         return EXIT_ERROR
     platform_config = config[platform_name]
 

@@ -100,7 +100,7 @@ class Logger:
         self._log(Level.EXEC, message, inline=inline)
 
     def input(self, message: str, *, inline: bool = False) -> None:
-        self.log(Level.INPUT, message, inline=inline)
+        self._log(Level.INPUT, message, inline=inline)
 
     def success(self, message: str) -> None:
         self._log(Level.SUCCESS, message)

@@ -37,6 +37,8 @@ def pip_install(packages, *args) -> bool:
             *packages,
             *args,
             check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         return True
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
@@ -58,8 +60,20 @@ def pip_package_is_installed(package) -> bool:
 
 
 def git_pull() -> bool:
+    def _git_pull():
+        execute_command(
+            "git",
+            "-C",
+            str(REPO_ROOT),
+            "pull",
+            "--rebase",
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
     try:
-        execute_command("git", "-C", str(REPO_ROOT), "pull", "--rebase", check=True)
+        _git_pull()
         return True
 
     except subprocess.CalledProcessError as e:
@@ -72,9 +86,7 @@ def git_pull() -> bool:
 
                 logger.info("Retrying git pull...")
                 try:
-                    execute_command(
-                        "git", "-C", str(REPO_ROOT), "pull", "--rebase", check=True
-                    )
+                    _git_pull()
                 except subprocess.CalledProcessError as e2:
                     logger.error(
                         f"Git pull still failed with exit code {e2.returncode}"
