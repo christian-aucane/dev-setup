@@ -139,6 +139,7 @@ def run(config) -> bool:
 
     status = True
 
+    logger.install("Git pull...")
     status &= git_pull()
     status &= run_link(config["links"])
     status &= install_fonts(config["fonts"])

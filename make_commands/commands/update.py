@@ -74,6 +74,7 @@ def run(config) -> bool:
 
     status = True
 
+    logger.update("Git pull...")
     status &= git_pull()
     status &= run_link(config["links"])
     status &= update_gnome(config.get("gnome"))

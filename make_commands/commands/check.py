@@ -20,7 +20,7 @@ def check_repo() -> bool:
         return False
 
     if git_is_up_to_date():
-        logger.success("Repository clean !")
+        logger.success("Repository clean and up to date!")
     else:
         logger.warn("Repository has uncommitted changes")
     return True
