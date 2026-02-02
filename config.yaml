@@ -28,10 +28,8 @@ windows:
   links:
     - src: nvim
       dest: "%LOCALAPPDATA%/nvim"
-
     - src: neovide
       dest: "%APPDATA%/neovide"
-
     - src: lazygit
       dest: "%APPDATA%/lazygit"
   pip_packages:
