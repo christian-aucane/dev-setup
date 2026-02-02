@@ -1,17 +1,15 @@
 # =========================================
 # prompt.zsh
-# Prompt Zsh lisible, moderne et efficace
+# Prompt Zsh lisible, moderne et informatif
 # =========================================
 
-# Permet l'expansion de variables dans le prompt
 setopt PROMPT_SUBST
 
-# Couleurs
 autoload -Uz colors
 colors
 
 # -----------------------------------------
-# OS (lisible au lieu d'un UUID)
+# OS lisible
 # -----------------------------------------
 if [[ -f /etc/os-release ]]; then
   source /etc/os-release
@@ -21,49 +19,67 @@ else
 fi
 
 # -----------------------------------------
-# Git / VCS
+# vcs_info (Git)
 # -----------------------------------------
 autoload -Uz vcs_info
-setopt PROMPT_SUBST
+setopt prompt_subst
 
-# Format : (branch)
-zstyle ':vcs_info:git:*' formats '(%b)'
-zstyle ':vcs_info:*' enable git
-
-# Met à jour vcs_info avant chaque prompt
+# Affiché AVANT chaque prompt
 precmd() {
   vcs_info
 }
 
+# Activer Git
+zstyle ':vcs_info:*' enable git
+
+# Format de base (sans couleur ici)
+zstyle ':vcs_info:git:*' formats '(%b)'
+zstyle ':vcs_info:git:*' actionformats '(%b|%a)'
+
 # -----------------------------------------
 # Statut dernière commande
 # -----------------------------------------
-# ✔ vert si succès, ✘ rouge si erreur
 local exit_status='%(?.%F{green}✔.%F{red}✘)%f'
 
 # -----------------------------------------
-# User@OS + canard 🐤
+# User@OS + poussin
 # -----------------------------------------
 local user_os="%F{blue}%n@%F{cyan}${OS_NAME} %F{yellow}🐤%f"
 
 # -----------------------------------------
-# Répertoire courant
+# Couleur dynamique de la branche Git
 # -----------------------------------------
-# Vert vif pour bien contraster
-local cwd="%F{green}%~%f"
+git_prompt() {
+  [[ -z "$vcs_info_msg_0_" ]] && return
+
+  local branch="$vcs_info_msg_0_"
+  local color="%F{green}"   # clean par défaut
+  local suffix=""
+
+  # état critique : merge / rebase / etc
+  if [[ -n "$vcs_info_msg_1_" ]]; then
+    color="%F{red}"
+    suffix="!"
+  # repo dirty
+  elif ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+    color="%F{yellow}"
+    suffix="*"
+  fi
+
+  echo " ${color}${branch}${suffix}%f"
+}
 
 # -----------------------------------------
-# Branche Git
+# Répertoire courant
 # -----------------------------------------
-# Violet pour bien ressortir
-local git_branch='%F{magenta}${vcs_info_msg_0_}%f'
+local cwd="%F{green}%~%f"
 
 # -----------------------------------------
 # Symbole de prompt
 # -----------------------------------------
-local prompt_char="%F{magenta}»%f"
+local prompt_char="%F{magenta}%#%f"
 
 # -----------------------------------------
 # Prompt final
 # -----------------------------------------
-PROMPT=" ${exit_status} ${user_os} ${cwd} ${git_branch} ${prompt_char} "
+PROMPT=' ${exit_status} ${user_os} $(git_prompt) ${cwd} ${prompt_char} '
