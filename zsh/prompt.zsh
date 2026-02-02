@@ -54,19 +54,19 @@ git_prompt() {
 
   local branch="$vcs_info_msg_0_"
   local color="%F{green}"   # clean par défaut
-  local suffix=""
+  local state=""
 
   # état critique : merge / rebase / etc
   if [[ -n "$vcs_info_msg_1_" ]]; then
     color="%F{red}"
-    suffix="!"
+    state="!"
   # repo dirty
   elif ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-    color="%F{yellow}"
-    suffix="*"
+    color="%F{blue}"
+    state="*"
   fi
 
-  echo " ${color}${branch}${suffix}%f"
+  echo "${color}${state}${branch}%f"
 }
 
 # -----------------------------------------
@@ -77,9 +77,9 @@ local cwd="%F{green}%~%f"
 # -----------------------------------------
 # Symbole de prompt
 # -----------------------------------------
-local prompt_char="%F{magenta}%#%f"
+local prompt_char="%F{magenta}»%f"
 
 # -----------------------------------------
 # Prompt final
 # -----------------------------------------
-PROMPT=' ${exit_status} ${user_os} $(git_prompt) ${cwd} ${prompt_char} '
+PROMPT=' ${exit_status} ${user_os} ${cwd} $(git_prompt) ${prompt_char} '
