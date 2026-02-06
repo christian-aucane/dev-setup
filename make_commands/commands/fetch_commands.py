@@ -10,7 +10,7 @@ def download_gnome_extension(uuid: str, gnome_version: str) -> Path | None:
     Returns the local path to the downloaded zip file.
     Returns None if the extension is not found or if a network error occurs.
     """
-    logger.execute(f"Download GNOME extension {uuid}")
+    logger.exec(f"Download GNOME extension {uuid}")
 
     base_api = "https://extensions.gnome.org/extension-info/"
     params = {
