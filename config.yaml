@@ -13,6 +13,7 @@ linux:
   pip_packages:
     - norminette
     - c-formatter-42
+    - mypy
   fonts:
     src_dir: fonts
     dest_dir: ~/.local/share/fonts
@@ -36,6 +37,7 @@ windows:
     - pynvim
     - norminette
     - c-formatter-42
+    - mypy
   fonts:
     src_dir: fonts
     dest_dir: "%LOCALAPPDATA%/Microsoft/Windows/Fonts"
