@@ -33,8 +33,18 @@ vim.api.nvim_create_autocmd("TermOpen", {
 			desc = "Exit insert mode (terminal)",
 		})
 
-		-- Second ESC: close terminal buffer
+		-- Second ESC: reduce terminal buffer
 		vim.keymap.set("n", "<Esc>", function()
+			vim.cmd("ToggleTerm")
+		end, {
+			buffer = buf,
+			noremap = true,
+			silent = true,
+			desc = "Close terminal buffer",
+		})
+
+		-- q after ESC: close terminal buffer
+		vim.keymap.set("n", "q", function()
 			vim.cmd("bd!")
 		end, {
 			buffer = buf,
